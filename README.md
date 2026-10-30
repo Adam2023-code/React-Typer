@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # React Racer
 
 Building a [TypeRacer](https://play.typeracer.com/) clone in React was a project for a class I taught.
@@ -48,3 +49,6 @@ Visit the same URL in a new browser instance or an incognito window and that "vi
 There's never more than one game running. If a third browser instance visits the URL, they'll be told there's a game in progress.
 
 If you expose your localhost to the internet with something like [ngrok](https://ngrok.com/) or [localtunnel](https://localtunnel.github.io/www/) then someone on another computer can be your opponent.
+=======
+# React-Typer
+>>>>>>> 9df8d4e4b06f992394a37e3104ad025520c595f9
