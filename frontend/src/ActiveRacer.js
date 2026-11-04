@@ -1,5 +1,9 @@
 import React, { useState, useEffect } from 'react';
 
+import socket from './socket';
+
+import RaceCanvas from './RaceCanvas';
+
 import useInterval from './useInterval';
 
 import QuoteMap from './QuoteMap';
@@ -28,11 +32,12 @@ const getOffsetMismatchPosition = (offset, word, input) => {
  *
  * But if we don't increment it, it will render as if we have yet to type the last word.
  */
-const ActiveRacer = ({ quote, onFinish, emit, playerId, players, playersPct }) => {
+const ActiveRacer = ({ quote, onFinish, emit, playerId, players, playersPct, highScore }) => {
   const [wordIndex, setWordIndex] = useState(0);
   const [currentInput, setCurrentInput] = useState('');
   const [currentWpm, setCurrentWpm] = useState(0);
   const [pctTyped, setPctTyped] = useState(0);
+  const [racerState, setRacerState] = useState('RacerStates.IN_PROGRESS');
 
   const quoteMap = QuoteMap({ quote });
 
@@ -45,6 +50,48 @@ const ActiveRacer = ({ quote, onFinish, emit, playerId, players, playersPct }) =
 
   const typingIntervals = createTypingIntervals(0, quoteMismatchPos, cursorPosition, quote.length);
 
+  const [totalKeystrokes, setTotalKeystrokes] = useState(0);
+  const [errors, setErrors] = useState(0);
+
+  // const storageKey = `personalBestWPM_${playerId}`;
+
+  // const [highScore, setHighScore] = useState(() => {
+  //   if (!playerId) return 0;
+  //   const saved = localStorage.getItem(storageKey);
+  //   return saved ? Number(saved) : 0;
+  // });
+
+  // useEffect(() => {
+  //   if (!playerId) {
+  //     const saved = localStorage.getItem(storageKey);
+  //     setHighScore(saved ? Number(saved) : 0);
+  //   }
+  // }, [playerId, storageKey]);
+
+  // const handleFinishRacing = ({ finalWpm, finalAccuracy }) => {
+  //   if (finalWpm > highScore) {
+  //     setHighScore(finalWpm);
+  //     if (playerId) {
+  //       localStorage.setItem(storageKey, finalWpm);
+  //     }
+  //   }
+  //   if (onFinish) {
+  //     onFinish({ finalWpm, finalAccuracy });
+  //   }
+  // };
+
+  useEffect(() => {
+    if (!socket) return;
+  
+    socket.on('gameOver', (data) => {
+      setRacerState(racerState.FINISHED);
+    });
+
+    return () => {
+      socket.off('gameOver');
+    };
+  }, [socket]);
+
   useInterval((elapsed) => {
     const wordsTyped = wordIndex;
     const elapsedMin = elapsed / (60 * 1000);
@@ -54,31 +101,35 @@ const ActiveRacer = ({ quote, onFinish, emit, playerId, players, playersPct }) =
     setCurrentWpm(Math.floor(wpm));
   }, 500);
 
+  const accuracy = totalKeystrokes > 0 ? Math.max(0, Math.round(((totalKeystrokes - errors) / totalKeystrokes) * 100)) : 100;
   useEffect(() => {
     emit('game.player.pct', { id: playerId, pct: pctTyped });
   }, [pctTyped]);
 
+  const handleMistake = () => {
+    setErrors((prev) => prev + 1);
+    setTotalKeystrokes((prev) => prev + 1);
+  };
+
+  const handleCorrectKey = () => {
+    setTotalKeystrokes((prev) => prev + 1);
+  };
+
   function onWordMatch() {
+    setTotalKeystrokes((prev) => prev + 1);
     if (wordIndex < quoteMap.wordsCount() - 1) {
       setPctTyped((wordIndex + 1) / quoteMap.wordsCount());
       setWordIndex(wordIndex + 1);
     } else {
       setPctTyped(1);
-      onFinish({ finalWpm: currentWpm });
+      onFinish({ finalWpm: currentWpm, finalAccuracy: accuracy });
     }
   }
 
   return (
     <div className="active-racer">
-      {
-        players.map((playerId) => {
-          const playerPctTyped = playersPct[playerId] || 0;
+      <RaceCanvas players={players} playersPct={playersPct} />
 
-          return (
-            <ProgressBar key={playerId} percent={playerPctTyped} />
-          );
-        })
-      }
       <form>
         <CheckedQuote
           quoteMap={quoteMap}
@@ -91,11 +142,17 @@ const ActiveRacer = ({ quote, onFinish, emit, playerId, players, playersPct }) =
           expectedWord={currentWord}
           onInputChange={setCurrentInput}
           onWordMatch={onWordMatch}
+          onMistake={handleMistake}
+          onCorrectKey={handleCorrectKey}
         />
 
         <div>
           <strong>WPM:</strong>
           <span>{currentWpm}</span>
+          <strong style={{ marginLeft: '15px' }}>Accuracy: </strong>
+          <span>{accuracy}%</span>
+          <strong style= {{ marginLeft: '15px' }}>Personal Best WPM: </strong>
+          <span>{highScore}</span>
         </div>
       </form>
     </div>

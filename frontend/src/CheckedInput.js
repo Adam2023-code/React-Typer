@@ -3,7 +3,7 @@ import React, { useRef, useEffect } from 'react';
 const eventTargetValue = e => e.target.value;
 const handleTypingEventWith = fn => e => fn(eventTargetValue(e));
 
-const CheckedInput = ({ expectedWord, onInputChange, onWordMatch }) => {
+const CheckedInput = ({ expectedWord, onInputChange, onWordMatch, onMistake, onCorrectKey }) => {
   const userInput = useRef(null);
 
   useEffect(() => {
@@ -14,6 +14,12 @@ const CheckedInput = ({ expectedWord, onInputChange, onWordMatch }) => {
     if (typedWord === expectedWord.text) {
       userInput.current.value = '';
       onWordMatch();
+    } else if (!expectedWord.text.startsWith(typedWord)) {
+      onMistake();
+    } else {
+      if (onCorrectKey) {
+        onCorrectKey();
+      }
     }
 
     onInputChange(userInput.current.value);

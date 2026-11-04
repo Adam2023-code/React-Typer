@@ -11,3 +11,19 @@
   height: 100%;
   transition: width .5s ease-in;
 }
+
+/* .player_progress {
+  position: relative;
+  height: 65px;
+  margin-bottom: 15px;
+  overflow: visible;
+}
+
+.car-avatar {
+  position: absolute;
+  top: 35px; /* Adjust this value to position the car above the progress bar */
+  /* transform: translateX(-50%);
+  font-size: 20px;
+  z-index: 10;
+  transition: left 0.15s ease-out; 
+} */ 
