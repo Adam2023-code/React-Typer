@@ -1,18 +1,26 @@
+require('dotenv').config();
 const { v4: uuid } = require('uuid');
 const express = require('express');
+// const { dbGet, dbRun } = require('./database');
+const cors = require('cors');
+const bcrypt = require('bcrypt');
+const db = require('./database');
 const http = require('http');
 const { Server: SocketIO } = require('socket.io');
+const jwt = require('jsonwebtoken');
 
 const port = process.env.PORT || 4001;
 
 const app = express();
-
+app.use(cors());
+app.use(express.json());
 const server = http.createServer(app);
 
 // The frontend runs on a different port, so CORS is required.
 //
 // For now, allow requests regardless of  origin. If this were
 // a Real Project™, you'd use an environment-specific config file.
+
 const io = new SocketIO(server, {
   cors: {
     origin: '*',
@@ -44,6 +52,10 @@ class Game {
 
     this.players.push(player);
 
+    if (this.isFull()) {
+      this.start();
+    }
+
     return this;
   }
 
@@ -57,7 +69,24 @@ class Game {
   }
 
   isFull() {
-    return this.players.length === 2;
+    return this.players.length >= this.maxPlayers;
+  }
+
+  finish(winnerPlayerId) {
+    this.state = RacerStates.FINISHED;
+    this.winner = winnerPlayerId;
+
+    if (typeof this.onGameFinished === 'function') {
+      this.onGameFinished(this);
+    }
+  }
+
+  updateProgress(playerId, pct) {
+    this.playersPct[playerId] = pct;
+
+    if (pct >= 1 && this.state === RacerStates.IN_PROGRESS) {
+      this.finish(playerId);
+    }
   }
 
   isWaiting() {
@@ -80,8 +109,82 @@ class Player {
   }
 }
 
+
+// Registration Route
+app.post('/api/register', async (req,res) => {
+  const {username, password} = req.body;
+
+  try {
+    const saltRounds = 10;
+    const passwordHash = await bcrypt.hash(password, saltRounds);
+
+    const query = `INSERT INTO users (username, password_hash) VALUES (?, ?)`;
+
+    db.run(query, [username, passwordHash], function(err) {
+      if (err) {
+        if (err.message.includes('UNIQUE constraint failed')) {
+          return res.status(400).json( { success: false, message: 'Username is already taken' });
+        }
+        return res.status(500).json({ success: false, message: 'Database error occured'});
+      }
+      return res.status(201).json({
+        success: true,
+        message: 'User registered successfully!',
+        userId: this.lastID
+      });
+    });
+  } catch (error) {
+    console.error('Server error:', error);
+    return res.status(500).json({ success: false, message: 'Internal server error'});
+  }
+});
+
+// Login Route
+app.post('/api/login', async (req, res) => {
+  const { username, password } = req.body;
+
+  try {
+      const query = `SELECT * FROM users WHERE username = ?`;
+    
+    db.get(query, [username], async (err, user) => {
+      if (err) {
+        return res.status(500).json({ success: false, message: 'Database error occured' });
+      }
+
+      if (!user) {
+        return res.status(401).json({ success: false, message: 'Invalid username or password' });
+      }
+
+      const passwordMatch = await bcrypt.compare(password, user.password_hash);
+
+      if (passwordMatch) {
+        const token = jwt.sign(
+          { userId: user.id, username: user.username },
+          process.env.JWT_SECRET,
+          { expiresIn: '1h'}
+        );
+
+        return res.status(200).json({
+          success: true,
+          message: 'Login successful',
+          token: token
+        });                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       
+      } else {
+        return res.status(401).json({
+          success: false,
+          message: 'Invalid username or password'
+        }); 
+    }
+});
+
+} catch (error) {
+    console.error('Server error:', error);
+    return res.status(500).json({ success: false, message: 'Internal server error'});
+}
+});
+
 const createNewGame = ( { onGameStart }) => {
-  return new Game({ maxPlayers: 2, onGameStart, id: uuid(), state: RacerStates.WAITING });
+  return new Game({ maxPlayers: 5, onGameStart, id: uuid(), state: RacerStates.WAITING });
 }
 
 let activeGame = null;
@@ -100,12 +203,18 @@ io.on('connection', (socket) => {
     }
   });
 
-  socket.on('game.join', () => {
+  socket.on('game.join', ({username} = {}) => {
+
+    player.username = username || 'Anonymous';
+
     if (!activeGame) {
       activeGame = createNewGame({
         onGameStart: (game) => {
           io.to(game.id).emit('game.start');
           io.to(game.id).emit('game.message', 'We have a game!');
+        },
+        onGameFinished: (game) => {
+          io.to(game.id).emit('game.message', `Game finished! Player ${game.winner} won!`);
         }
       });
     }
