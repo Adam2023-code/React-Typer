@@ -53,6 +53,29 @@ const ActiveRacer = ({ quote, onFinish, emit, playerId, players, playersPct, hig
   const [totalKeystrokes, setTotalKeystrokes] = useState(0);
   const [errors, setErrors] = useState(0);
 
+  const [countdown, setCountDown] = useState(3);
+  const [isCountingDown, setIsCountingDown] = useState(true);
+
+  const [darkMode, setDarkMode] = useState(false);
+  
+    const toggleDarkMode = () => {
+      setDarkMode((prev) => !prev);
+    }
+  
+
+  useEffect(() => {
+    if (!isCountingDown) return;
+
+    if (countdown > 0) {
+      const timer = setTimeout(() => {
+        setCountDown((prev) => prev - 1);
+      }, 1000);
+      return () => clearTimeout(timer);
+    } else {
+      setIsCountingDown(false);
+    }
+  }, [countdown, isCountingDown]);
+
   // const storageKey = `personalBestWPM_${playerId}`;
 
   // const [highScore, setHighScore] = useState(() => {
@@ -127,8 +150,26 @@ const ActiveRacer = ({ quote, onFinish, emit, playerId, players, playersPct, hig
   }
 
   return (
-    <div className="active-racer">
+  <div className={darkMode ? "active-racer dark-mode" : "active-racer"}>
+    <div style={{ textAlign: 'right', marginBottom: '10px' }}>
+      <button
+        type="button"
+        onClick={toggleDarkMode}
+        className="theme-toggle-btn"
+      >
+        {darkMode ? '☀️Light Mode' : '🌙 Dark Mode'}
+      </button>
+    </div>
+
       <RaceCanvas players={players} playersPct={playersPct} />
+      {isCountingDown ? (
+        <div className="countdown-container" style={{ textAlign: 'center', margin: '15px 0' }}>
+          <h2>Get Ready!</h2>
+          <h1 style={{fontSize: '2.5rem', color: '#ff4757' }}>
+            {countdown > 0 ? countdown : "GO!"}
+          </h1>
+        </div>
+      ) : null}
 
       <form>
         <CheckedQuote
@@ -144,6 +185,8 @@ const ActiveRacer = ({ quote, onFinish, emit, playerId, players, playersPct, hig
           onWordMatch={onWordMatch}
           onMistake={handleMistake}
           onCorrectKey={handleCorrectKey}
+          disabled={isCountingDown}
+          countdown={countdown}
         />
 
         <div>

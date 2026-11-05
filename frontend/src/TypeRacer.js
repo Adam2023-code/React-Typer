@@ -15,6 +15,7 @@ const TypeRacer = ({ quote, onFinish, racerState, ...props }) => {
   const [accuracy, setAccuracy] = useState(100);
   const [players, setPlayers] = useState([]);
 
+  
   const [highScore, setHighScore] = useState(() => {
     const saved = localStorage.getItem('personalBestWPM');
     return saved ? Number(saved) : 0;
