@@ -8,11 +8,12 @@ const CheckedQuote = ({
   currentWordIndex,
   cursorPosition,
   typingIntervals,
+  fontSize,
 }) => {
   const words = Array.from(quoteMap.words());
 
   return (
-    <blockquote className="checked-quote">
+    <blockquote className="checked-quote" style={{ fontSize: `${fontSize}px` }}>
       {
         words.map((word, wordIndex) => {
           const isCurrent = wordIndex === currentWordIndex;

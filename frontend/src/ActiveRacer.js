@@ -32,7 +32,7 @@ const getOffsetMismatchPosition = (offset, word, input) => {
  *
  * But if we don't increment it, it will render as if we have yet to type the last word.
  */
-const ActiveRacer = ({ quote, onFinish, emit, playerId, players, playersPct, highScore }) => {
+const ActiveRacer = ({ quote, onFinish, emit, playerId, players, playersPct, highScore, fontSize }) => {
   const [wordIndex, setWordIndex] = useState(0);
   const [currentInput, setCurrentInput] = useState('');
   const [currentWpm, setCurrentWpm] = useState(0);
@@ -57,6 +57,10 @@ const ActiveRacer = ({ quote, onFinish, emit, playerId, players, playersPct, hig
   const [isCountingDown, setIsCountingDown] = useState(true);
 
   const [darkMode, setDarkMode] = useState(false);
+
+  const [streak, setStreak] = useState(0);
+
+  const [showStats, setShowStats] = useState(true);
   
     const toggleDarkMode = () => {
       setDarkMode((prev) => !prev);
@@ -132,10 +136,15 @@ const ActiveRacer = ({ quote, onFinish, emit, playerId, players, playersPct, hig
   const handleMistake = () => {
     setErrors((prev) => prev + 1);
     setTotalKeystrokes((prev) => prev + 1);
+    setStreak(0);
   };
 
   const handleCorrectKey = () => {
     setTotalKeystrokes((prev) => prev + 1);
+  };
+
+  const handleCorrectWord = () => {
+    setStreak((prevStreak) => prevStreak + 1);
   };
 
   function onWordMatch() {
@@ -156,8 +165,17 @@ const ActiveRacer = ({ quote, onFinish, emit, playerId, players, playersPct, hig
         type="button"
         onClick={toggleDarkMode}
         className="theme-toggle-btn"
+        style={{ marginRight: '10px' }}
       >
         {darkMode ? '☀️Light Mode' : '🌙 Dark Mode'}
+      </button>
+
+      <button
+        type="button"
+        onClick={() => setShowStats(prev => !prev)}
+        className="theme-toggle-btn"
+      >
+        {showStats ? '🫣 Hide Stats' : '👀 Show Stats'}
       </button>
     </div>
 
@@ -178,6 +196,7 @@ const ActiveRacer = ({ quote, onFinish, emit, playerId, players, playersPct, hig
           currentInput={currentInput}
           cursorPosition={cursorPosition}
           typingIntervals={typingIntervals}
+          fontSize={fontSize}
         />
         <CheckedInput
           expectedWord={currentWord}
@@ -187,16 +206,19 @@ const ActiveRacer = ({ quote, onFinish, emit, playerId, players, playersPct, hig
           onCorrectKey={handleCorrectKey}
           disabled={isCountingDown}
           countdown={countdown}
+          onCorrectWord={handleCorrectWord}
         />
-
-        <div>
+        {showStats && (<div>
           <strong>WPM:</strong>
           <span>{currentWpm}</span>
           <strong style={{ marginLeft: '15px' }}>Accuracy: </strong>
           <span>{accuracy}%</span>
           <strong style= {{ marginLeft: '15px' }}>Personal Best WPM: </strong>
           <span>{highScore}</span>
+          <strong style={{ marginLeft: '15px' }}>Accuracy Streak🔥: </strong>
+          <span>{streak}</span>
         </div>
+      )}
       </form>
     </div>
   );
