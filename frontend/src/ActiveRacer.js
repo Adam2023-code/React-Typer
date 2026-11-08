@@ -146,6 +146,20 @@ const ActiveRacer = ({ quote, onFinish, emit, playerId, players, playersPct, hig
   const handleCorrectWord = () => {
     setStreak((prevStreak) => prevStreak + 1);
   };
+ 
+  const getWPMcolor = (currentWpm) => {
+    if (currentWpm >= 80) return '0 0 15px rgba(247, 8, 8)'; // Super Fast
+    if (currentWpm >= 60) return '0 0 15px rgb(229, 155, 17)'; 
+    if (currentWpm >= 40) return '0 0 15px rgba(233, 229, 10)';
+    return '#0000FF';
+  } 
+
+  const getWPMglow = (currentWpm) => {
+    if (currentWpm >= 80) return '#f70a0a'; // Super Fast
+    if (currentWpm >= 60) return '#eab308'; 
+    if (currentWpm >= 40) return '#dff309';
+    return 'none';
+  }
 
   function onWordMatch() {
     setTotalKeystrokes((prev) => prev + 1);
@@ -159,7 +173,15 @@ const ActiveRacer = ({ quote, onFinish, emit, playerId, players, playersPct, hig
   }
 
   return (
-  <div className={darkMode ? "active-racer dark-mode" : "active-racer"}>
+  <div className={darkMode ? "active-racer dark-mode" : "active-racer"}
+    style={{
+      boxShadow: getWPMglow(currentWpm),
+      transition: 'box-shadow 0.4s ease',
+      padding: '20px',
+      borderRadius: '12px',
+      overflow: 'visible'
+    }}
+  >
     <div style={{ textAlign: 'right', marginBottom: '10px' }}>
       <button
         type="button"
@@ -209,8 +231,10 @@ const ActiveRacer = ({ quote, onFinish, emit, playerId, players, playersPct, hig
           onCorrectWord={handleCorrectWord}
         />
         {showStats && (<div>
-          <strong>WPM:</strong>
-          <span>{currentWpm}</span>
+          <strong>WPM: </strong>
+          <span style={{ color: getWPMcolor(currentWpm), fontWeight: 'bold' }}>
+          {currentWpm}
+          </span>
           <strong style={{ marginLeft: '15px' }}>Accuracy: </strong>
           <span>{accuracy}%</span>
           <strong style= {{ marginLeft: '15px' }}>Personal Best WPM: </strong>
