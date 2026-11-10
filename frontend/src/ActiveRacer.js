@@ -148,17 +148,37 @@ const ActiveRacer = ({ quote, onFinish, emit, playerId, players, playersPct, hig
   };
  
   const getWPMcolor = (currentWpm) => {
-    if (currentWpm >= 80) return '0 0 15px rgba(247, 8, 8)'; // Super Fast
-    if (currentWpm >= 60) return '0 0 15px rgb(229, 155, 17)'; 
-    if (currentWpm >= 40) return '0 0 15px rgba(233, 229, 10)';
-    return '#0000FF';
+    if (currentWpm >= 80) return 'rgb(247, 8, 8)'; // Super Fast
+    if (currentWpm >= 60) return 'rgb(229, 155, 17)'; 
+    if (currentWpm >= 40) return 'rgb(233, 229, 10)';
+    return 'rgb(34, 6, 243)';
   } 
 
+  const getAccuracyColor = (accuracy) => {
+    if (accuracy >= 90) return '#07f33a';
+    if (accuracy >= 85) return '#fbae09';
+    if (accuracy >= 75) return '#fd0808';
+    return '#FFFF00';
+   };
+
   const getWPMglow = (currentWpm) => {
-    if (currentWpm >= 80) return '#f70a0a'; // Super Fast
-    if (currentWpm >= 60) return '#eab308'; 
-    if (currentWpm >= 40) return '#dff309';
+     if (currentWpm >= 80) return '0 0 15px #f70a0a'; // Super Fast
+    if (currentWpm >= 60) return '0 0 15px #eab308'; 
+    if (currentWpm >= 40) return '0 0 15px #dff309';
     return 'none';
+  }
+
+  const getPersonalBestColor = (highScore) => {
+    if (highScore >= 80) return '#07f33a';
+    if (highScore >= 60) return '#fbae09';
+    if (highScore >= 40) return '#fd0808';
+    return '#ffffff';
+  };
+
+  const getStreakColor = (streak) => {
+    if (streak >= 20) return '#fd0808';
+    if (streak >= 10) return '#fbae09';
+    if (streak >= 0) return '#dff309';
   }
 
   function onWordMatch() {
@@ -236,11 +256,17 @@ const ActiveRacer = ({ quote, onFinish, emit, playerId, players, playersPct, hig
           {currentWpm}
           </span>
           <strong style={{ marginLeft: '15px' }}>Accuracy: </strong>
-          <span>{accuracy}%</span>
+          <span style={{ color: getAccuracyColor(accuracy), fontWeight: 'bold'}}>
+          {accuracy}%
+          </span>
           <strong style= {{ marginLeft: '15px' }}>Personal Best WPM: </strong>
-          <span>{highScore}</span>
+          <span style={{ color: getPersonalBestColor(highScore), fontWeight: 'bold' }}>
+          {highScore}
+          </span>
           <strong style={{ marginLeft: '15px' }}>Accuracy Streak🔥: </strong>
-          <span>{streak}</span>
+          <span style={{ color: getStreakColor(streak), fontWeight: 'bold'}}>
+          {streak}
+          </span>
         </div>
       )}
       </form>

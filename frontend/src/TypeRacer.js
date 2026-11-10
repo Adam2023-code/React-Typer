@@ -18,6 +18,9 @@ const TypeRacer = ({ quote, onFinish, racerState, ...props }) => {
   const [accuracy, setAccuracy] = useState(100);
   const [players, setPlayers] = useState([]);
   const [fontSize, setFontSize] = useState(24);
+  const [streak, setStreak] = useState(0);
+  const [multiplier, setMultiplier] = useState(1);
+  const [showPBNotification, setShowPBNotification] = useState(false);
 
   const increaseFontSize = () => {
     setFontSize((prevSize) => Math.min(prevSize + 4, 48));
@@ -62,7 +65,12 @@ const TypeRacer = ({ quote, onFinish, racerState, ...props }) => {
 
     if (finalWpm > highScore) {
       setHighScore(finalWpm);
+      setShowPBNotification(true);
       localStorage.setItem('personalBestWPM', finalWpm);
+
+      setTimeout(() => {
+        setShowPBNotification(false);
+      }, 3000);
     }
 
     if (onFinish) {
@@ -101,6 +109,19 @@ const TypeRacer = ({ quote, onFinish, racerState, ...props }) => {
 
     return (
       <div className="game-over">
+        {showPBNotification && (
+          <div style={{
+            backgroundColor: '#07f33a',
+            color: '#000',
+            padding: '10px 15px',
+            borderRadius: '8px',
+            textAlign: 'center',
+            fontWeight: 'bold',
+            marginBottom: '15px'
+          }}>
+           🎉 New Personal Best
+          </div>
+        )}
         <h2>
           {`Race Over! Congrats, you typed ${wpm} words per minute and your accuracy was ${accuracy}%!`}
         </h2>
