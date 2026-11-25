@@ -112,6 +112,7 @@ const ActiveRacer = ({ quote, onFinish, emit, playerId, players, playersPct, hig
   
     socket.on('gameOver', (data) => {
       setRacerState(racerState.FINISHED);
+      
     });
 
     return () => {
