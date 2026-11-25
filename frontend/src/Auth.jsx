@@ -34,7 +34,12 @@ function Auth({ setToken }) {
             console.log('Token successfully saved to sessionStorage!');
           }
         } else {
-          setMessage(data.message || 'Something went wrong.');
+          if (data.errors && data.errors.length > 0) {
+            const allErrors = data.errors.map(err => err.msg).join(' | ');
+            setMessage(allErrors);
+          } else {
+            setMessage(data.message || 'Something went wrong.');
+          }
         }
     } catch (error) {
         console.error('Connection error:', error);
