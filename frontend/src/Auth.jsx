@@ -51,8 +51,8 @@ function Auth({ setToken }) {
         <h2>{isLogin ? 'Login' : 'Register'}</h2>
         {message && <p className="auth-message">{message}</p>}
 
-        <form onSubmit={handleSubmit}>
-            <div>
+        <form onSubmit={handleSubmit} style={{ marginBottom: '12px' }}>
+            <div style = {{ marginBottom: '12px' }}>
                 <label>Username: </label>
                 <input
                     type="text"
@@ -61,7 +61,7 @@ function Auth({ setToken }) {
                     required
                 />
             </div>
-            <div>
+            <div style = {{ marginBottom: '16px'}}>
                 <label>Password: </label>
                 <input
                     type="password"
