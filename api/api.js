@@ -109,9 +109,41 @@ class Player {
   }
 }
 
+const {body, validationResult } = require('express-validator');
+
+const validateRegister = [
+  body('username')
+    .trim() 
+    .isLength({ min: 3, max: 20 })
+    .withMessage('Username must be between 3 and 20 characters.')
+    .escape(),
+  body('password')
+    .isLength({ min: 3 })
+    .withMessage('Password must be at least 3 characters long.')
+];
+  
+const validateLogin = [
+  body('username').trim().notEmpty().withMessage('Username is required').escape(),
+  body('password').notEmpty().withMessage('Password is required')
+];
+
 
 // Registration Route
-app.post('/api/register', async (req,res) => {
+
+// const isGuest = (req, res, next) => {
+//   if (req.session && req.session.userId) {
+//     return res.status(400).json({ success: false, message: 'You are already logged in!'})
+//   }
+//   next();
+// };
+
+app.post('/api/register', validateRegister, async (req,res) => {
+
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ success: false, errors: errors.array() });
+  }
+
   const {username, password} = req.body;
 
   try {
@@ -140,7 +172,12 @@ app.post('/api/register', async (req,res) => {
 });
 
 // Login Route
-app.post('/api/login', async (req, res) => {
+app.post('/api/login', validateLogin, async (req, res) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ success: false, errors: errors.array() });
+  }
+
   const { username, password } = req.body;
 
   try {
@@ -159,7 +196,7 @@ app.post('/api/login', async (req, res) => {
 
       if (passwordMatch) {
         const token = jwt.sign(
-          { userId: user.id, username: user.username },
+          { userId: user.id, username: user.username, role: user.role },
           process.env.JWT_SECRET,
           { expiresIn: '1h'}
         );
