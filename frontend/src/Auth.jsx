@@ -60,6 +60,8 @@ function Auth({ setToken }) {
         <h2>{isLogin ? 'Login' : 'Register'}</h2>
         {message && <p className="auth-message">{message}</p>}
 
+        
+
         <form onSubmit={handleSubmit} style={{ marginBottom: '12px' }}>
             <div style = {{ marginBottom: '12px' }}>
                 <label>Username: </label>
