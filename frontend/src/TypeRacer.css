@@ -1,7 +1,7 @@
 .racer-container,
 .active-racer {
   padding: 20px;
-  background-color: #ffffff;
+  background-color: #e0f2fe;
   color: #222222;
   border-radius: 12px;
   transition: background-color 0.3s ease, color 0.3s ease;
