@@ -53,7 +53,8 @@ function Auth({ setToken }) {
       color: '#0f172a',
       padding: '24px',
       maxWidth: '360px',
-      border: '1px solid #bae6fd'
+      border: '1px solid #bae6fd',
+      fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif'
     }}
     >
         <h2>{isLogin ? 'Login' : 'Register'}</h2>
