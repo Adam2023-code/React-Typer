@@ -44,6 +44,7 @@ function Auth({ setToken }) {
     } catch (error) {
         console.error('Connection error:', error);
         setMessage('Failed to connect to the server. Is the backend running?');
+        
     }
   };
   return (
@@ -60,7 +61,7 @@ function Auth({ setToken }) {
         <h2>{isLogin ? 'Login' : 'Register'}</h2>
         {message && <p className="auth-message">{message}</p>}
 
-        
+
 
         <form onSubmit={handleSubmit} style={{ marginBottom: '12px' }}>
             <div style = {{ marginBottom: '12px' }}>
